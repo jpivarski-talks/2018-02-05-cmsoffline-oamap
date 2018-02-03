@@ -77,22 +77,25 @@ Giant SQL servers are common in industry: this one is publicly accessible.
 
 \begin{frame}{Steps and differences}
 \vspace{0.5 cm}
-\mbox{\hspace{-0.45 cm}\textcolor{darkblue}{We can't directly use these systems in HEP without a few changes:}}
+\mbox{\hspace{-0.55 cm}\textcolor{darkblue}{We can't directly use these systems in HEP without a few changes:}}
 
 \renewcommand{\arraystretch}{1.5}
 
-\vspace{0.5 cm}\mbox{\hspace{-0.6 cm}
-\begin{tabular}{p{0.26\linewidth} p{0.2\linewidth} p{0.2\linewidth} p{0.3\linewidth}}
+\vspace{0.25 cm}\mbox{\hspace{-0.7 cm}
+\begin{tabular}{p{0.26\linewidth} p{0.2\linewidth} p{0.21\linewidth} p{0.3\linewidth}}
 & Google & HEP & what I'm developing \\\hline
 Source data format & \mbox{Parquet, ORC,} Avro, BSON, \ldots & ROOT & \mbox{{\bf uproot:} array-centric} ROOT reader \\
 Query language & SQL & Python or C++ & {\bf oamap:} columnar objects \\
 Distributed storage & GFS/HDFS & {\it similar} (Ceph?) & {\it starting now} \\
 Distributed processing & Dremel/Drill & \mbox{{\it similar} (Dask?} Zookeeper?) & {\it future} \\
-User interface & web dashboard, Google Sheets & PyROOT, rootpy, Jupyter/SWAN & {\it future} \\
+User interface & \mbox{web dashboard,} \mbox{Google Sheets,} REST queries & TDataFrame, \mbox{PyROOT, Jupyter}, SWAN, Spark & {\bf Histogrammar:} \mbox{functional histogramming,} {\bf Femtocode} {\it (future)\ldots} \\
 \end{tabular}}
 \end{frame}
 
-\begin{frame}
+\begin{frame}{}
+
+
+
 
 \end{frame}
 
