@@ -248,7 +248,7 @@ array([ 1,  1,  4,  7,  7,  8, 13, 13, 14, 14])
 \end{uncoverenv}
 \end{frame}
 
-\begin{frame}[fragile]{Not just TTrees; reads TStreamers and interprets some types}
+\begin{frame}[fragile]{Not just TTrees; reads TStreamers and interprets several types}
 \vspace{0.1 cm}
 \small
 \begin{minted}{python}
@@ -288,9 +288,9 @@ array([ 1,  1,  4,  7,  7,  8, 13, 13, 14, 14])
 \vspace{0.5 cm}
 \Large
 \begin{itemize}\setlength{\itemsep}{0.25 cm}
-\item Explicit caching (user-provided {\small\tt dict} or {\small\tt dict}-like object)
-\item Explicit parallel-processing (user-provided {\small\tt ThreadPoolExecutor})
-\item Optional non-blocking calls
+\item Explicit caching (user-provided {\large\tt dict} or {\large\tt dict}-like object)
+\item Explicit parallel-processing \mbox{(user-provided {\large\tt ThreadPoolExecutor})\hspace{-1 cm}}
+\item Optional non-blocking calls (useful when parallel-processing)
 \item Lazy arrays (load on demand, aware of TBasket structure)
 \item Numba integration: operations on Numpy arrays, JaggedArrays and TH1 can be compiled (more later)
 \item Functional chains (like TDataFrame)
@@ -316,6 +316,153 @@ pip install uproot --user
 \end{center}
 \end{frame}
 
+\begin{frame}{uproot download statistics (pip logs are in Google BigQuery)}
+\vspace{0.25 cm}
+\begin{columns}
+\column{0.45\linewidth}
+\includegraphics[width=\linewidth]{downloads-per-day.png}
 
+\includegraphics[width=\linewidth]{downloads-by-os.png}
+
+\column{0.45\linewidth}
+\includegraphics[width=\linewidth]{downloads-by-country.png}
+
+\includegraphics[width=\linewidth]{downloads-by-country-2.png}
+
+\end{columns}
+\end{frame}
+
+\begin{frame}{Object-Array Mapping: generalizing JaggedArrays}
+\vspace{0.5 cm}
+JaggedArrays are only one data structure: list of lists of numbers.
+\begin{itemize}
+\item Implementation as an array of numbers with array of boundaries is much more efficient than thousands of tiny arrays randomly scattered in memory.
+\item Sublists are ``views'' created on demand (Not created at all in compiled code!)
+\end{itemize}
+
+\begin{uncoverenv}<2->
+\vspace{0.25 cm}
+\underline{\bf Generalize to a complete typesystem:}
+\begin{description}
+\item[primitives:] booleans, numbers, characters--- anything fixed-width;
+\item[lists:] arbitrary length sequences of any one type;
+\item[unions:] logical-or type (e.g.\ particle is an electron or a photon);
+\item[records:] logical-and type: object that contains named, typed fields;
+\item[tuples:] like a record, but typed fields are indexed, not named;
+\item[pointers:] redirect to another collection to make trees, graphs, enumerations;
+\item[extensions:] runtime interpretations of the above (e.g.\ list of chars as a ``string'').
+\end{description}
+\end{uncoverenv}
+\end{frame}
+
+\begin{frame}[fragile]{NASA Exoplanets example on website}
+\vspace{0.1 cm}
+\small
+\begin{minted}{python}
+>>> import oamap.source.parquet
+>>> stars = oamap.source.parquet.open("planets.parquet")
+>>> stars
+\end{minted}
+\begin{verbatim}
+[<Star at index 0>, <Star at index 1>, <Star at index 2>,
+ <Star at index 3>, <Star at index 4>, ...]
+\end{verbatim}
+\begin{minted}{python}
+>>> stars[0].ra, stars[0].dec
+\end{minted}
+\begin{verbatim}
+(293.12738, 42.320103)
+\end{verbatim}
+\begin{minted}{python}
+>>> stars[258].planets
+\end{minted}
+\begin{verbatim}
+[<Planet at index 324>, <Planet at index 325>, <Planet at index 326>,
+ <Planet at index 327>, <Planet at index 328>]
+\end{verbatim}
+\begin{minted}{python}
+>>> [x.name for x in stars[258].planets]
+\end{minted}
+\begin{verbatim}
+['HD 40307 b', 'HD 40307 c', 'HD 40307 d', 'HD 40307 f', 'HD 40307 g']
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Explore, run compiled code, explore some more\ldots}
+\vspace{0.1 cm}
+\small
+\begin{minted}{python}
+>>> import numba             # compiles array-based Python code
+>>> import oamap.compiler    # loads object-array compiler extensions
+>>> @numba.njit              # decorator for compiling a function
+>>> def orbital_period_ratio(stars):
+...    out = []
+...    for star in stars:
+...       best_ratio = None
+...       for one in star.planets:
+...          for two in star.planets:
+...             ratio = one.orbital_period.val / two.orbital_period.val
+...             if best_ratio is None or ratio > best_ratio:
+...                best_ratio = ratio
+...       if best_ratio is not None and best_ratio > 200:
+...          out.append(star)
+...    return out
+>>> extremes = orbital_period_ratio(stars)
+>>> extremes
+[<Star at index 284>, <Star at index 466>, <Star at index 469>, ...
+\end{minted}
+\end{frame}
+
+\begin{frame}{oamap is an infrastructure component}
+\vspace{0.5 cm}
+\begin{itemize}\setlength{\itemsep}{0.25 cm}
+\item TBranch data efficiently lifted from ROOT into arrays, efficiently scanned with oamap/numba-compiled functions.
+\item Columns of data are {\it never} turned into objects.
+\begin{itemize}
+\item No need for schema evolution (no container classes).
+\item ROOT-style selective and contiguous branch reading at all stages of the calculation: disk $\to$ memory and memory $\to$ CPU.
+\item Alternate between object-oriented operations and vectorized (or GPU) operations.
+\item Manipulate structure of dataset without copying data.
+\item Different dataset versions can share the majority of their columns.
+\end{itemize}
+\item These techniques are common for SQL in databases, but new to full programming environments like Python objects.
+\item There was nothing special about Python; this could be done for C++ as well.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{}
+\vspace{1 cm}
+\huge
+\begin{center}
+\begin{minipage}{0.8\linewidth}
+\begin{verbatim}pip install oamap --user
+\end{verbatim}
+\end{minipage}
+
+\Large
+\vspace{1 cm}
+\href{https://github.com/diana-hep/oamap}{\textcolor{blue}{https://github.com/diana-hep/oamap}}
+\end{center}
+
+\normalsize
+\vspace{1 cm}
+(The demo examples use a Parquet file of NASA Exoplanets because I want it to be accessible to developers outside of HEP, to attract outside help.)
+\end{frame}
+
+\begin{frame}{Final slide: a reminder of how these fit into an ecosystem}
+\vspace{0.5 cm}
+
+\renewcommand{\arraystretch}{1.5}
+
+\vspace{0.25 cm}\mbox{\hspace{-0.7 cm}
+\begin{tabular}{p{0.26\linewidth} p{0.2\linewidth} p{0.21\linewidth} p{0.3\linewidth}}
+& Google/Big Data & HEP & what I'm developing \\\hline
+Source data format & \mbox{Parquet, ORC,} Avro, BSON, \ldots & ROOT & \mbox{{\bf uproot:} array-centric} ROOT reader \\
+Query language & SQL & Python or C++ & {\bf oamap:} columnar objects \\
+Distributed storage & GFS/HDFS & {\it similar} (Ceph?) & {\it starting now} \\
+Distributed processing & Dremel/Drill & \mbox{{\it similar} (Dask?} Zookeeper?) & {\it future} \\
+User interface & \mbox{web dashboard,} \mbox{Google Sheets,} REST queries & TDataFrame, \mbox{PyROOT, Jupyter}, SWAN, Spark & {\bf Histogrammar:} \mbox{functional histogramming,} {\bf Femtocode} {\it (future)\ldots} \\
+\end{tabular}}
+\end{frame}
 
 \end{document}
