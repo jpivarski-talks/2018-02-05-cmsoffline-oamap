@@ -172,7 +172,7 @@ The loop over events is in (fast) compiled code, not (slow) Python for loops. Wh
 
 \small
 \begin{minted}{python}
-uproot.iterate("~/files*.root", "events", ["px1"], entrystep=1000)
+uproot.iterate("files*.root", "events", ["px1"], entrystep=1000)
 \end{minted}
 \end{frame}
 
@@ -287,7 +287,7 @@ array([ 1,  1,  4,  7,  7,  8, 13, 13, 14, 14])
 \begin{frame}{Other features}
 \vspace{0.5 cm}
 \Large
-\begin{itemize}\setlength{\itemsep}{0.25 cm}
+\begin{itemize}\setlength{\itemsep}{0.4 cm}
 \item Explicit caching (user-provided {\large\tt dict} or {\large\tt dict}-like object)
 \item Explicit parallel-processing \mbox{(user-provided {\large\tt ThreadPoolExecutor})\hspace{-1 cm}}
 \item Optional non-blocking calls (useful when parallel-processing)
@@ -337,7 +337,7 @@ pip install uproot --user
 JaggedArrays are only one data structure: list of lists of numbers.
 \begin{itemize}
 \item Implementation as an array of numbers with array of boundaries is much more efficient than thousands of tiny arrays randomly scattered in memory.
-\item Sublists are ``views'' created on demand (Not created at all in compiled code!)
+\item Sublists are ``views'' created on demand. (Not created at all in compiled code!)
 \end{itemize}
 
 \begin{uncoverenv}<2->
@@ -345,9 +345,9 @@ JaggedArrays are only one data structure: list of lists of numbers.
 \underline{\bf Generalize to a complete typesystem:}
 \begin{description}
 \item[primitives:] booleans, numbers, characters--- anything fixed-width;
-\item[lists:] arbitrary length sequences of any one type;
-\item[unions:] logical-or type (e.g.\ particle is an electron or a photon);
-\item[records:] logical-and type: object that contains named, typed fields;
+\item[lists:] arbitrary length sequences of any single type;
+\item[unions:] logical-or type (e.g.\ a Particle is an Electron or a Photon);
+\item[records:] logical-and type: ``struct'' object that contains named, typed fields;
 \item[tuples:] like a record, but typed fields are indexed, not named;
 \item[pointers:] redirect to another collection to make trees, graphs, enumerations;
 \item[extensions:] runtime interpretations of the above (e.g.\ list of chars as a ``string'').
@@ -360,7 +360,7 @@ JaggedArrays are only one data structure: list of lists of numbers.
 \small
 \begin{minted}{python}
 >>> import oamap.source.parquet
->>> stars = oamap.source.parquet.open("planets.parquet")
+>>> stars = oamap.source.parquet.open("planets*.parquet")
 >>> stars
 \end{minted}
 \begin{verbatim}
@@ -388,7 +388,7 @@ JaggedArrays are only one data structure: list of lists of numbers.
 \end{verbatim}
 \end{frame}
 
-\begin{frame}[fragile]{Explore, run compiled code, explore some more\ldots}
+\begin{frame}[fragile]{Explore, scan with compiled code, then explore some more\ldots}
 \vspace{0.1 cm}
 \small
 \begin{minted}{python}
