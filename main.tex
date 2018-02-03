@@ -52,9 +52,50 @@
 
 % START START START START START START START START START START START START START
 
-\begin{frame}{First slide}
+\begin{frame}{Tools for data analysis}
 \vspace{0.5 cm}
-HERE
+\begin{block}{\underline{Eventual goal}}
+\vspace{0.15 cm}
+{\bf Query-based analysis:} let physicists do their analysis by querying a central dataset instead of downloading and managing private skims. Remove an expensive middleman!
+\end{block}
+
+\vspace{0.5 cm}
+\begin{block}{\underline{Existence proof}}
+\begin{enumerate}
+\item I've worked with such systems at several large companies as a statistical consultant, regularly querying terabytes in seconds.
+\item I accessed Google BigQuery to prepare part of this talk (2~TB in 30~sec).
+
+Giant SQL servers are common in industry: this one is publicly accessible.
+\end{enumerate}
+\end{block}
 \end{frame}
+
+\begin{frame}{Google BigQuery}
+\vspace{0.5 cm}
+\includegraphics[width=\linewidth]{bigquery.png}
+\end{frame}
+
+\begin{frame}{Steps and differences}
+\vspace{0.5 cm}
+\mbox{\hspace{-0.45 cm}\textcolor{darkblue}{We can't directly use these systems in HEP without a few changes:}}
+
+\renewcommand{\arraystretch}{1.5}
+
+\vspace{0.5 cm}\mbox{\hspace{-0.6 cm}
+\begin{tabular}{p{0.26\linewidth} p{0.2\linewidth} p{0.2\linewidth} p{0.3\linewidth}}
+& Google & HEP & what I'm developing \\\hline
+Source data format & \mbox{Parquet, ORC,} Avro, BSON, \ldots & ROOT & \mbox{{\bf uproot:} array-centric} ROOT reader \\
+Query language & SQL & Python or C++ & {\bf oamap:} columnar objects \\
+Distributed storage & GFS/HDFS & {\it similar} (Ceph?) & {\it starting now} \\
+Distributed processing & Dremel/Drill & \mbox{{\it similar} (Dask?} Zookeeper?) & {\it future} \\
+User interface & web dashboard, Google Sheets & PyROOT, rootpy, Jupyter/SWAN & {\it future} \\
+\end{tabular}}
+\end{frame}
+
+\begin{frame}
+
+\end{frame}
+
+
 
 \end{document}
