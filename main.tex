@@ -75,16 +75,15 @@ Analysis-as-a-service is common in industry: this one is publicly accessible.
 \includegraphics[width=\linewidth]{bigquery.png}
 \end{frame}
 
-\begin{frame}{Steps and differences}
-\vspace{0.5 cm}
-\mbox{\hspace{-0.55 cm}\textcolor{darkblue}{We can't directly use these systems in HEP without a few changes:}}
+\begin{frame}{These systems are not suited for HEP data, but they could be}
+\vspace{0.25 cm}
 
 \renewcommand{\arraystretch}{1.5}
 
 \vspace{0.25 cm}\mbox{\hspace{-0.7 cm}
 \begin{tabular}{p{0.26\linewidth} p{0.2\linewidth} p{0.21\linewidth} p{0.3\linewidth}}
 & Google/Big Data & HEP & what I'm developing \\\hline
-Source data format & \mbox{Parquet, ORC,} Avro, BSON, \ldots & ROOT & \mbox{{\bf uproot:} array-centric} ROOT reader \\
+Source data format & \mbox{Parquet, ORC,} Avro, BSON, \ldots & ROOT & \mbox{{\bf uproot:} array-oriented} ROOT reader \\
 Query language & SQL & Python or C++ & {\bf oamap:} columnar objects \\
 Distributed storage & GFS/HDFS & {\it similar} (Ceph?) & {\it starting now} \\
 Distributed processing & Dremel/Drill & \mbox{{\it similar} (Dask?} Zookeeper?) & {\it future} \\
@@ -103,12 +102,13 @@ User interface & \mbox{web dashboard,} \mbox{Google Sheets,} REST queries & TDat
 
 \begin{frame}{Numpy is the reason an ML ecosystem developed in Python}
 \vspace{0.5 cm}
+\Large
 Standardized way of wrapping low-level (fast) arrays in high-level (convenient) Python.
 
-\vspace{0.5 cm}
+\vspace{0.75 cm}
 Most scientific Python libraries are compiled code with Python interfaces, and Numpy is the standard way to move or share data between them.
 
-\vspace{0.5 cm}
+\vspace{0.75 cm}
 uproot provides this kind of access to ROOT.
 \end{frame}
 
@@ -450,14 +450,14 @@ JaggedArrays are only one data structure: list of lists of numbers.
 \end{frame}
 
 \begin{frame}{Final slide: a reminder of how these fit into an ecosystem}
-\vspace{0.5 cm}
+\vspace{0.25 cm}
 
 \renewcommand{\arraystretch}{1.5}
 
 \vspace{0.25 cm}\mbox{\hspace{-0.7 cm}
 \begin{tabular}{p{0.26\linewidth} p{0.2\linewidth} p{0.21\linewidth} p{0.3\linewidth}}
 & Google/Big Data & HEP & what I'm developing \\\hline
-Source data format & \mbox{Parquet, ORC,} Avro, BSON, \ldots & ROOT & \mbox{{\bf uproot:} array-centric} ROOT reader \\
+Source data format & \mbox{Parquet, ORC,} Avro, BSON, \ldots & ROOT & \mbox{{\bf uproot:} array-oriented} ROOT reader \\
 Query language & SQL & Python or C++ & {\bf oamap:} columnar objects \\
 Distributed storage & GFS/HDFS & {\it similar} (Ceph?) & {\it starting now} \\
 Distributed processing & Dremel/Drill & \mbox{{\it similar} (Dask?} Zookeeper?) & {\it future} \\
