@@ -101,9 +101,221 @@ User interface & \mbox{web dashboard,} \mbox{Google Sheets,} REST queries & TDat
 \end{description}
 \end{frame}
 
-\begin{frame}{}
+\begin{frame}{Numpy is the reason an ML ecosystem developed in Python}
+\vspace{0.5 cm}
+Standardized way of wrapping low-level (fast) arrays in high-level (convenient) Python.
 
+\vspace{0.5 cm}
+Most scientific Python libraries are compiled code with Python interfaces, and Numpy is the standard way to move or share data between them.
 
+\vspace{0.5 cm}
+uproot provides this kind of access to ROOT.
 \end{frame}
+
+\begin{frame}[fragile]{Load one attribute for all events at a time}
+\vspace{0.1 cm}
+\small
+\begin{minted}{python}
+>>> import uproot
+>>> t = uproot.open("tests/samples/Zmumu.root")["events"]
+>>> t.keys()
+\end{minted}
+\begin{verbatim}
+['Type', 'Run', 'Event', 'E1', 'px1', 'py1', 'pz1', 'pt1',
+ 'eta1', 'phi1', 'Q1', 'E2', 'px2', 'py2', 'pz2', 'pt2',
+ 'eta2', 'phi2', 'Q2', 'M']
+\end{verbatim}
+\begin{minted}{python}
+>>> t["M"].array()
+\end{minted}
+\begin{verbatim}
+array([ 82.46269156,  83.62620401,  83.30846467, ...,  95.96547966,
+        96.49594381,  96.65672765])
+\end{verbatim}
+\begin{minted}{python}
+>>> t.arrays(["px1", "py1", "pz1"])
+\end{minted}
+\begin{verbatim}
+{'py1': array([ 17.433243, -16.5703623, -16.5703623, ..., 1.1994057,
+ ...
+\end{verbatim}
+\begin{minted}{python}
+>>> t.arrays()    # all of them!
+\end{minted}
+\begin{verbatim}
+ ...
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Doing meaningful calculations with Numpy arrays}
+\small
+\begin{minted}{python}
+>>> import uproot, numpy
+>>> t = uproot.open("tests/samples/Zmumu.root")["events"]
+>>> px, py, pz = t.arrays(["px1", "py1", "pz1"], outputtype=tuple)
+>>> # compute pt for all events in the first pass
+>>> pt = numpy.sqrt(px**2 + py**2)
+>>> # compute eta for all events
+>>> eta = numpy.arctanh(pz / numpy.sqrt(px**2 + py**2 + pz**2))
+>>> # compute phi for all events
+>>> phi = numpy.arctan2(py, px)
+>>> print(pt, eta, phi)
+\end{minted}
+\begin{verbatim}
+[ 44.7322 38.8311  38.8311  ...,  32.3997  32.3997 32.5076  ],
+[-1.21769 -1.05139 -1.05139 ..., -1.57044 -1.57044 -1.57078 ],
+[ 2.74126 -0.44087 -0.44087 ...,  0.03702  0.03702  0.036964]
+\end{verbatim}
+
+\normalsize
+The loop over events is in (fast) compiled code, not (slow) Python for loops. When we iterate over big datasets, we iterate in batches:
+
+\small
+\begin{minted}{python}
+uproot.iterate("~/files*.root", "events", ["px1"], entrystep=1000)
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Connector to an external package: Pandas}
+\vspace{0.1 cm}
+\small
+\begin{minted}{bash}
+$ pip install pandas --user
+\end{minted}
+\begin{minted}{python}
+>>> df = t.pandas.df()   # all the same arguments as t.arrays()
+>>> df
+\end{minted}
+\begin{verbatim}
+              E1          E2      Event          M  Q1  Q2     Run  \
+0      82.201866   60.621875   10507008  82.462692   1  -1  148031
+1      62.344929   82.201866   10507008  83.626204  -1   1  148031
+2      62.344929   81.582778   10507008  83.308465  -1   1  148031
+3      60.621875   81.582778   10507008  82.149373  -1   1  148031
+...
+2302   1.199406 -26.398400  -74.532431 -153.847604   GT
+2303   1.201350 -26.398400  -74.808372 -153.847604   GG
+
+[2304 rows x 20 columns]
+\end{verbatim}
+
+\normalsize
+Pandas is a Swiss army knife for {\it in-memory, tabular} data analysis. Linked to plotting tools, exploratory data analysis, and machine learning. The popular {\it Python for Data Analysis} book is basically a Pandas tutorial.
+\end{frame}
+
+\begin{frame}[fragile]{Data with non-uniform width (not scalar numbers)}
+\vspace{0.1 cm}
+\small
+\begin{minted}{python}
+>>> t = uproot.open("tests/samples/mc10events.root")["Events"]
+>>> a = t.array("Muon.pt")    # such as std::vector<numbers>
+>>> a                         # variable length for each event
+\end{minted}
+\begin{verbatim}
+jaggedarray([[ 28.07074928],
+             [],
+             [ 5.52336693  5.4780116 4.13222885],
+             ...
+             [],
+             [ 6.85138178],
+             []])
+\end{verbatim}
+\begin{uncoverenv}<2->
+\begin{onlyenv}<2>
+\begin{minted}{python}
+>>> for event in a:
+...     for muon in event:
+...         # conceptually, an array of different-length arrays
+...
+\end{minted}
+\vspace{2 cm}
+\end{onlyenv}
+\begin{onlyenv}<1,3>
+\begin{minted}{python}
+>>> a.contents    # but efficiently stored as a contiguous block
+\end{minted}
+\begin{verbatim}
+array([ 28.07074928,   5.52336693,   5.47801161,   4.13222885, ...
+         5.06344414,   6.85138178], dtype=float32)
+\end{verbatim}
+\begin{minted}{python}
+>>> a.stops       # with event boundaries in a separate array
+\end{minted}
+\begin{verbatim}
+array([ 1,  1,  4,  7,  7,  8, 13, 13, 14, 14])
+\end{verbatim}
+\end{onlyenv}
+\end{uncoverenv}
+\end{frame}
+
+\begin{frame}[fragile]{Not just TTrees; reads TStreamers and interprets some types}
+\vspace{0.1 cm}
+\small
+\begin{minted}{python}
+>>> import uproot
+>>> f = uproot.open("mixed-data.root")
+>>> f.allclasses()    # list object names and classes (recursively)
+\end{minted}
+\scriptsize
+\begin{verbatim}
+{'gaussian;1': <class 'uproot.rootio.TH1F'>, 'events;1': <class 'uproot.rootio.TTree>}
+\end{verbatim}
+\small
+\begin{minted}{python}
+>>> f["gaussian"].show()
+\end{minted}
+\scriptsize
+\begin{verbatim}
+                  0                                               2411
+                  +--------------------------------------------------+
+[-inf, -3)   0    |                                                  |
+[-3, -2.4)   68   |*                                                 |
+[-2.4, -1.8) 285  |******                                            |
+[-1.8, -1.2) 755  |****************                                  |
+[-1.2, -0.6) 1580 |**********************************                |
+[-0.6, 0)    2296 |************************************************  |
+[0, 0.6)     2286 |***********************************************   |
+[0.6, 1.2)   1570 |*********************************                 |
+[1.2, 1.8)   795  |****************                                  |
+[1.8, 2.4)   289  |******                                            |
+[2.4, 3)     76   |**                                                |
+[3, inf]     0    |                                                  |
+                  +--------------------------------------------------+
+\end{verbatim}
+\end{frame}
+
+\begin{frame}{Other features}
+\vspace{0.5 cm}
+\Large
+\begin{itemize}\setlength{\itemsep}{0.25 cm}
+\item Explicit caching (user-provided {\small\tt dict} or {\small\tt dict}-like object)
+\item Explicit parallel-processing (user-provided {\small\tt ThreadPoolExecutor})
+\item Optional non-blocking calls
+\item Lazy arrays (load on demand, aware of TBasket structure)
+\item Numba integration: operations on Numpy arrays, JaggedArrays and TH1 can be compiled (more later)
+\item Functional chains (like TDataFrame)
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{}
+\vspace{0.5 cm}
+\huge
+\begin{center}
+\begin{minipage}{0.8\linewidth}
+\begin{verbatim}
+pip install uproot --user
+\end{verbatim}
+\end{minipage}
+
+\Large
+\vspace{1 cm}
+\href{https://github.com/scikit-hep/uproot}{\textcolor{blue}{https://github.com/scikit-hep/uproot}}
+
+\vspace{0.5 cm}
+\href{http://uproot.readthedocs.io}{\textcolor{blue}{http://uproot.readthedocs.io}}
+\end{center}
+\end{frame}
+
+
 
 \end{document}
